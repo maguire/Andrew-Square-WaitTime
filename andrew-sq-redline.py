@@ -3,6 +3,9 @@ import urllib2
 import json
 app = Flask(__name__)
 
+WALK_TIME_SECS = 180
+MBTA_REDLINE_URL = 'http://developer.mbta.com/lib/rthr/red.json'
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -10,19 +13,26 @@ def index():
 @app.route('/next-arrival')
 def next_arrival():
     try:
-        jsonurl = urllib2.urlopen('http://developer.mbta.com/lib/rthr/red.json')
+        redline = json.loads(urllib2.urlopen(MBTA_REDLINE_URL).read())
+        
+        # filter  trips headed towards Alewife
+        alewife_trips = [trip for trip in redline['TripList']['Trips'] if trip['Destination'] == 'Alewife']
+        
+        # get only the predictions 
+        predictions = []
+        for trip in alewife_trips:
+            predictions += trip['Predictions']
+
+        # filter stops for 'Andrew' and greater than time it takes to walk to T
+        andrew_stops = [stop for stop in predictions if stop['Stop'] == 'Andrew' and stop['Seconds'] > WALK_TIME_SECS]
+        
+        # sort and pick closest
+        sorted_andrew = sorted(andrew_stops, key=lambda stop: stop['Seconds'])
+        return str(sorted_andrew[0]['Seconds'] / 60) if len(sorted_andrew) > 0 else "-1"
+
     except:
         return "-1"
-    redline = json.loads(jsonurl.read()) 
-    # filter  trips headed towards Alewife
-    alewife_trips = [trip for trip in redline['TripList']['Trips'] if trip['Destination'] == 'Alewife']
-    # get only the predictions 
-    predictions = [trip['Predictions'] for trip in alewife_trips]
-    # filter stops for 'Andrew'
-    andrew_stops = [stop for stop in predictions if stop['Stop'] == 'Andrew']
-    # sort and grab the first stop seconds
-    return str(sorted(andrew_stops, key=lambda stop: stop['Seconds'])[0]['Seconds'] / 60)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=7700, debug=True)
 
