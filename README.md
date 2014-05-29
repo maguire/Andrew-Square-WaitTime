@@ -8,4 +8,4 @@ going towards Alewife and renders a template for a mobile device with the time i
 
 Starting
 --------
-Using the Flask dev server, just run <code>% python andrew-sq-redline.py</code>
+Using the Flask dev server, just run <code>python andrew-sq-redline.py</code>
