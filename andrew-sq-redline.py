@@ -4,7 +4,7 @@ import json
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
+def index():
     return render_template('index.html')
 
 @app.route('/next-arrival')
@@ -14,12 +14,14 @@ def next_arrival():
     except:
         return "-1"
     redline = json.loads(jsonurl.read()) 
+    # filter  trips headed towards Alewife
     alewife_trips = [trip for trip in redline['TripList']['Trips'] if trip['Destination'] == 'Alewife']
-    predictions = []
-    for trip in alewife_trips:
-        predictions += trip['Predictions']
+    # get only the predictions 
+    predictions = [trip['Predictions'] for trip in alewife_trips]
+    # filter stops for 'Andrew'
     andrew_stops = [stop for stop in predictions if stop['Stop'] == 'Andrew']
-    return str(sorted(andrew_stops, key=lambda x: x['Seconds'])[0]['Seconds'] / 60)
+    # sort and grab the first stop seconds
+    return str(sorted(andrew_stops, key=lambda stop: stop['Seconds'])[0]['Seconds'] / 60)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
