@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+
+<script>
+var update = function() { 
+    jQuery.get("/next-arrival", {}, function(data) {
+        mins = data;
+        if (parseInt(data) < 1) {
+            mins = "<1"
+        } 
+        jQuery("#minutes").html(mins) 
+    }); 
+}
+
+jQuery(document).ready(function() { intervalId = window.setInterval(update, 30000); update() })
+</script>
+<style>
+body {
+background: #3B3B3B;
+font-family: Helvetica,Arial,sans-serif;
+}
+
+
+
+#minutes {
+text-align: center;
+width : 100%;
+font-size : 200px;
+color: #FF0033;
+}
+
+</style>
+</head>
+<body >
+<div data-role="page" id="page1">
+     <div data-role="content">
+	    <div id="minutes">-1</span>
+     </div>
+</div>
+</body>
+
+</html>
